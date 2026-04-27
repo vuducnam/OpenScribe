@@ -12,6 +12,8 @@ const kebabCasePattern = "^[a-z0-9]+(?:-[a-z0-9]+)*$"
 
 const ignoredPaths = [
   "build/**",
+  ".worktrees/**",
+  ".pnpm-store/**",
   "node_modules/**",
   "**/.venv-*/**",
   "**/.venv/**",
@@ -19,7 +21,12 @@ const ignoredPaths = [
   "apps/web/.next/**",
   "output/**",
 ]
-const nodeFiles = ["config/**/*.{js,mjs,cjs}", "packages/shell/**/*.js", "scripts/**/*.{js,mjs,cjs}"]
+const nodeFiles = [
+  "config/**/*.{js,mjs,cjs}",
+  "packages/shell/**/*.js",
+  "scripts/**/*.{js,mjs,cjs}",
+  "local-only/**/*.{js,mjs,cjs}",
+]
 const nodeGlobals = {
   require: "readonly",
   module: "readonly",
@@ -32,6 +39,9 @@ const nodeGlobals = {
   clearTimeout: "readonly",
   setInterval: "readonly",
   clearInterval: "readonly",
+  fetch: "readonly",
+  navigator: "readonly",
+  AudioContext: "readonly",
 }
 
 export default tseslint.config(
@@ -71,6 +81,15 @@ export default tseslint.config(
       ],
       "react-hooks/rules-of-hooks": "error",
       "react-hooks/exhaustive-deps": "warn",
+      "no-empty": ["error", { allowEmptyCatch: true }],
+      "@typescript-eslint/no-unused-vars": [
+        "error",
+        {
+          argsIgnorePattern: "^_",
+          varsIgnorePattern: "^_",
+          caughtErrors: "none",
+        },
+      ],
       "unicorn/filename-case": [
         "error",
         {
@@ -105,15 +124,21 @@ export default tseslint.config(
     files: nodeFiles,
     languageOptions: {
       parserOptions: {
-        projectService: {
-          allowDefaultProject: ["scripts/*.js", "scripts/*.mjs", "scripts/*.cjs"],
-        },
+        projectService: false,
         tsconfigRootDir,
       },
       globals: nodeGlobals,
     },
     rules: {
       "@typescript-eslint/no-require-imports": "off",
+      "@typescript-eslint/no-unused-vars": "off",
+    },
+  },
+  {
+    files: ["**/*.test.ts", "**/*.test.tsx", "**/__tests__/**/*.{ts,tsx}"],
+    rules: {
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/ban-ts-comment": "off",
     },
   },
 )
